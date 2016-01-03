@@ -50,8 +50,23 @@ func main() {
 			c := img.At(x, y)
 			//			fmt.Println(ind, x, y)
 			//			pimg.Palette[ind] = c
-			pimg.Palette = append(pimg.Palette, c)
-			pimg.SetColorIndex(x, y, uint8(ind+1))
+
+			ci := -1
+			for cc, pp := range pimg.Palette {
+				if colorEq(c, pp) {
+					ci = cc
+				}
+			}
+
+			if ci == -1 {
+				pimg.Palette = append(pimg.Palette, c)
+				ci = len(pimg.Palette) - 1
+			} else {
+				j -= 1
+				fmt.Println(".")
+			}
+
+			pimg.SetColorIndex(x, y, uint8(ci))
 
 			j++
 		}
@@ -76,4 +91,15 @@ func main() {
 
 	fmt.Println("Output to: out.gif")
 	fmt.Printf("Conatins %d frames.\n", len(g.Image))
+}
+
+func colorEq(a, b color.Color) bool {
+	ar, ag, ab, aa := a.RGBA()
+	br, bg, bb, ba := b.RGBA()
+
+	if ar == br && ag == bg && ab == bb && aa == ba {
+		return true
+	}
+
+	return false
 }
