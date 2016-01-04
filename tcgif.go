@@ -55,8 +55,6 @@ func main() {
 	}
 
 	b := img.Bounds()
-	g := &gif.GIF{}
-
 	colormap := make(map[color.Color][]coord)
 
 	for y := 0; y <= b.Max.Y; y++ {
@@ -91,8 +89,10 @@ func main() {
 		limitSeglen = int(*frameLimit)
 	}
 
+	g := &gif.GIF{}
 	for i := 0; i < limitSeglen; i++ {
 		pimg := image.NewPaletted(b, color.Palette{})
+		// Add trasparency first so it's used as the matte color
 		pimg.Palette = append(pimg.Palette, color.Transparent)
 		g.Image = append(g.Image, pimg)
 
