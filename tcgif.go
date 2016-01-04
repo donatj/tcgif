@@ -6,7 +6,8 @@ import (
 	"image"
 	"image/color"
 	"image/gif"
-	"image/jpeg"
+	_ "image/jpeg"
+	_ "image/png"
 	"os"
 	"sort"
 )
@@ -48,7 +49,7 @@ func main() {
 		panic(err)
 	}
 
-	img, err := jpeg.Decode(file)
+	img, _, err := image.Decode(file)
 	if err != nil {
 		panic(err)
 	}
