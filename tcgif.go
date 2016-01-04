@@ -8,6 +8,7 @@ import (
 	"image/gif"
 	_ "image/jpeg"
 	_ "image/png"
+	"log"
 	"os"
 	"sort"
 )
@@ -45,12 +46,12 @@ func (p colorCountList) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 func main() {
 	file, err := os.Open(flag.Arg(0))
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	img, _, err := image.Decode(file)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	b := img.Bounds()
@@ -124,12 +125,12 @@ func main() {
 
 	out, err := os.Create("out.gif")
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	err = gif.EncodeAll(out, g)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	fmt.Println("Output to: out.gif")
