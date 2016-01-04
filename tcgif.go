@@ -8,15 +8,39 @@ import (
 	"image/gif"
 	"image/jpeg"
 	"os"
+	"sort"
+)
+
+var (
+	frameLimit = flag.Uint("framelimit", 0, "max number of frames. 0 = unlimited")
+	backfill   = flag.Bool("backfill", true, "backfill still missing pixels with closest color")
+	popsort    = flag.Bool("sort", true, "sort colors by popularity")
 )
 
 func init() {
 	flag.Parse()
 	if flag.NArg() != 1 {
+		flag.Usage()
 		fmt.Println("requires one jpeg as input")
 		os.Exit(1)
 	}
 }
+
+type coord struct {
+	X, Y int
+}
+
+type colorCount struct {
+	C      color.Color
+	I      int
+	Coords []coord
+}
+
+type colorCountList []colorCount
+
+func (p colorCountList) Len() int           { return len(p) }
+func (p colorCountList) Less(i, j int) bool { return p[i].I < p[j].I }
+func (p colorCountList) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
 func main() {
 	file, err := os.Open(flag.Arg(0))
@@ -30,45 +54,66 @@ func main() {
 	}
 
 	b := img.Bounds()
-
 	g := &gif.GIF{}
 
-	j := 0
-	var pimg *image.Paletted
+	colormap := make(map[color.Color][]coord)
 
-	for x := 0; x <= b.Max.X; x++ {
-		for y := 0; y <= b.Max.Y; y++ {
-
-			ind := j % 254
-
-			if ind == 0 {
-				pimg = image.NewPaletted(b, color.Palette{})
-				pimg.Palette = append(pimg.Palette, color.Transparent)
-				g.Image = append(g.Image, pimg)
-			}
-
+	for y := 0; y <= b.Max.Y; y++ {
+		for x := 0; x <= b.Max.X; x++ {
 			c := img.At(x, y)
-			//			fmt.Println(ind, x, y)
-			//			pimg.Palette[ind] = c
+			colormap[c] = append(colormap[c], coord{x, y})
+		}
+	}
 
-			ci := -1
-			for cc, pp := range pimg.Palette {
-				if colorEq(c, pp) {
-					ci = cc
+	colorhisto := make(colorCountList, 0)
+	for c, e := range colormap {
+		colorhisto = append(colorhisto, colorCount{c, len(e), e})
+	}
+
+	if *popsort {
+		sort.Sort(sort.Reverse(colorhisto))
+	}
+
+	seglen := (len(colorhisto) / 254) + 1
+	segments := make([]colorCountList, seglen)
+
+	x := 0
+	for _, xxx := range colorhisto {
+		n := x / 254 //integer division
+		segments[n] = append(segments[n], xxx)
+
+		x++
+	}
+
+	limitSeglen := seglen
+	if *frameLimit != 0 && int(*frameLimit) < limitSeglen {
+		limitSeglen = int(*frameLimit)
+	}
+
+	for i := 0; i < limitSeglen; i++ {
+		pimg := image.NewPaletted(b, color.Palette{})
+		pimg.Palette = append(pimg.Palette, color.Transparent)
+		g.Image = append(g.Image, pimg)
+
+		for _, ch := range segments[i] {
+			pimg.Palette = append(pimg.Palette, ch.C)
+			ind := pimg.Palette.Index(ch.C)
+
+			for _, ccoord := range ch.Coords {
+				pimg.SetColorIndex(ccoord.X, ccoord.Y, uint8(ind))
+			}
+		}
+
+		if *backfill {
+			for j := i + 1; j < seglen; j++ {
+				for _, ch := range segments[j] {
+					ind := pimg.Palette.Index(ch.C)
+
+					for _, ccoord := range ch.Coords {
+						pimg.SetColorIndex(ccoord.X, ccoord.Y, uint8(ind))
+					}
 				}
 			}
-
-			if ci == -1 {
-				pimg.Palette = append(pimg.Palette, c)
-				ci = len(pimg.Palette) - 1
-			} else {
-				j -= 1
-				fmt.Println(".")
-			}
-
-			pimg.SetColorIndex(x, y, uint8(ci))
-
-			j++
 		}
 	}
 
@@ -76,8 +121,6 @@ func main() {
 	for i, _ := range g.Delay {
 		g.Delay[i] = 0
 	}
-
-	fmt.Println(j)
 
 	out, err := os.Create("out.gif")
 	if err != nil {
