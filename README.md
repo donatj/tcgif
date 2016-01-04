@@ -2,7 +2,15 @@
 
 True Color Gif Generator
 
-![Sample](https://raw.githubusercontent.com/donatj/tcgif/master/sample.gif)
+## Samples
+
+| Description                                                        | Image                                                                                                              | 
+|--------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------| 
+| Backfilled <br> `tcgif orig.jpg`                                        | ![Lenna, Backfilled](https://raw.githubusercontent.com/donatj/tcgif/images/sample_backfill.gif)                    | 
+| No Backfill, Sorted By Popularity <br> `tcgif -backfill=false orig.jpg` | ![Lenna, No Backfill](https://raw.githubusercontent.com/donatj/tcgif/images/sample_nobackfill.gif)                 | 
+| No Backfill, Unsorted <br> `tcgif -backfill=false -sort=false orig.jpg` | ![Lenna, No Backfill, No Sort](https://raw.githubusercontent.com/donatj/tcgif/images/sample_nobackfill_nosort.gif) | 
+| Original                                                           | ![Original](https://raw.githubusercontent.com/donatj/tcgif/images/orig.jpg)                                        | 
+
 
 ## Why?
 
