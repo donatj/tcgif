@@ -22,7 +22,7 @@ func init() {
 	flag.Parse()
 	if flag.NArg() != 1 {
 		flag.Usage()
-		fmt.Println("requires one jpeg as input")
+		fmt.Println("requires one image as input")
 		os.Exit(1)
 	}
 }
@@ -33,14 +33,13 @@ type coord struct {
 
 type colorCount struct {
 	C      color.Color
-	I      int
 	Coords []coord
 }
 
 type colorCountList []colorCount
 
 func (p colorCountList) Len() int           { return len(p) }
-func (p colorCountList) Less(i, j int) bool { return p[i].I < p[j].I }
+func (p colorCountList) Less(i, j int) bool { return len(p[i].Coords) < len(p[j].Coords) }
 func (p colorCountList) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
 func main() {
@@ -68,7 +67,7 @@ func main() {
 
 	colorhisto := make(colorCountList, 0)
 	for c, e := range colormap {
-		colorhisto = append(colorhisto, colorCount{c, len(e), e})
+		colorhisto = append(colorhisto, colorCount{c, e})
 	}
 
 	if *popsort {
@@ -135,15 +134,4 @@ func main() {
 
 	fmt.Println("Output to: out.gif")
 	fmt.Printf("Conatins %d frames.\n", len(g.Image))
-}
-
-func colorEq(a, b color.Color) bool {
-	ar, ag, ab, aa := a.RGBA()
-	br, bg, bb, ba := b.RGBA()
-
-	if ar == br && ag == bg && ab == bb && aa == ba {
-		return true
-	}
-
-	return false
 }
