@@ -119,7 +119,7 @@ func main() {
 	}
 
 	g.Delay = make([]int, len(g.Image))
-	for i, _ := range g.Delay {
+	for i := range g.Delay {
 		g.Delay[i] = 0
 	}
 
