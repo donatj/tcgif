@@ -19,7 +19,7 @@ Gifs have a limited pallet of 255 colors, but that limit is per frame. Gifs also
 
 | Description                                                        | Image                                                                                                              | 
 |--------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------| 
-| Backfilled <br> `tcgif orig.jpg`                                        | ![Lenna, Backfilled](https://raw.githubusercontent.com/donatj/tcgif/images/sample_backfill.gif)                    | 
-| No Backfill, Sorted By Popularity <br> `tcgif -backfill=false orig.jpg` | ![Lenna, No Backfill](https://raw.githubusercontent.com/donatj/tcgif/images/sample_nobackfill.gif)                 | 
 | No Backfill, Unsorted <br> `tcgif -backfill=false -sort=false orig.jpg` | ![Lenna, No Backfill, No Sort](https://raw.githubusercontent.com/donatj/tcgif/images/sample_nobackfill_nosort.gif) | 
+| No Backfill, Sorted By Popularity <br> `tcgif -backfill=false orig.jpg` | ![Lenna, No Backfill](https://raw.githubusercontent.com/donatj/tcgif/images/sample_nobackfill.gif)                 | 
+| Backfilled <br> `tcgif orig.jpg`                                        | ![Lenna, Backfilled](https://raw.githubusercontent.com/donatj/tcgif/images/sample_backfill.gif)                    | 
 | Original                                                           | ![Original](https://raw.githubusercontent.com/donatj/tcgif/images/orig.jpg)                                        | 
