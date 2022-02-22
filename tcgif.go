@@ -139,6 +139,5 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Output to: out.gif")
-	fmt.Printf("Conatins %d frames.\n", len(g.Image))
+	fmt.Printf("Output %d frames to: out.gif\n", len(g.Image))
 }
