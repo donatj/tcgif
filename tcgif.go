@@ -1,36 +1,13 @@
-package main
+package tcgif
 
 import (
-	"flag"
-	"fmt"
 	"image"
 	"image/color"
 	"image/gif"
 	_ "image/jpeg"
 	_ "image/png"
-	"log"
-	"os"
 	"sort"
 )
-
-var (
-	// See: https://www.biphelps.com/blog/The-Fastest-GIF-Does-Not-Exist
-	frameDelay = flag.Int("delay", 2, "frame delay in multiples of 10ms. 2 is fastest for historical reasons")
-	finalDelay = flag.Int("final-delay", 300, "frame delay in on final frame")
-
-	frameLimit = flag.Uint("framelimit", 0, "max number of frames. 0 = unlimited")
-	backfill   = flag.Bool("backfill", true, "backfill still missing pixels with closest color")
-	popsort    = flag.Bool("sort", true, "sort colors by popularity")
-)
-
-func init() {
-	flag.Parse()
-	if flag.NArg() != 1 {
-		flag.Usage()
-		fmt.Println("requires one image as input")
-		os.Exit(1)
-	}
-}
 
 type coord struct {
 	X, Y int
@@ -47,17 +24,65 @@ func (p colorCountList) Len() int           { return len(p) }
 func (p colorCountList) Less(i, j int) bool { return len(p[i].Coords) < len(p[j].Coords) }
 func (p colorCountList) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
-func main() {
-	file, err := os.Open(flag.Arg(0))
-	if err != nil {
-		log.Fatal(err)
+type GIFMaker struct {
+	frameDelay int
+	finalDelay int
+
+	frameLimit uint
+
+	backfill bool
+	popsort  bool
+}
+
+type Option func(*GIFMaker)
+
+func WithFrameDelay(delay int) Option {
+	return func(g *GIFMaker) {
+		g.frameDelay = delay
+	}
+}
+
+func WithFinalDelay(delay int) Option {
+	return func(g *GIFMaker) {
+		g.finalDelay = delay
+	}
+}
+
+func WithFrameLimit(limit uint) Option {
+	return func(g *GIFMaker) {
+		g.frameLimit = limit
+	}
+}
+
+func WithBackfill(backfill bool) Option {
+	return func(g *GIFMaker) {
+		g.backfill = backfill
+	}
+}
+
+func WithPopularitySort(popsort bool) Option {
+	return func(g *GIFMaker) {
+		g.popsort = popsort
+	}
+}
+
+func NewGIFMaker(opts ...Option) *GIFMaker {
+	gm := &GIFMaker{
+		frameDelay: 2,
+		finalDelay: 300,
+		frameLimit: 0,
+		backfill:   true,
+		popsort:    true,
 	}
 
-	img, _, err := image.Decode(file)
-	if err != nil {
-		log.Fatal(err)
+	for _, opt := range opts {
+		opt(gm)
 	}
 
+	return gm
+}
+
+func (gm *GIFMaker) MakeGIF(img image.Image) (*gif.GIF, error) {
 	b := img.Bounds()
 	colormap := make(map[color.Color][]coord)
 
@@ -73,7 +98,7 @@ func main() {
 		colorhisto = append(colorhisto, colorCount{c, e})
 	}
 
-	if *popsort {
+	if gm.popsort {
 		sort.Sort(sort.Reverse(colorhisto))
 	}
 
@@ -89,8 +114,8 @@ func main() {
 	}
 
 	limitSeglen := seglen
-	if *frameLimit != 0 && int(*frameLimit) < limitSeglen {
-		limitSeglen = int(*frameLimit)
+	if gm.frameLimit != 0 && int(gm.frameLimit) < limitSeglen {
+		limitSeglen = int(gm.frameLimit)
 	}
 
 	g := &gif.GIF{}
@@ -109,7 +134,7 @@ func main() {
 			}
 		}
 
-		if *backfill {
+		if gm.backfill {
 			for j := i + 1; j < seglen; j++ {
 				for _, ch := range segments[j] {
 					ind := pimg.Palette.Index(ch.C)
@@ -124,20 +149,10 @@ func main() {
 
 	g.Delay = make([]int, len(g.Image))
 	for i := range g.Delay {
-		g.Delay[i] = *frameDelay
+		g.Delay[i] = gm.frameDelay
 	}
 
-	g.Delay[len(g.Delay)-1] = *finalDelay
+	g.Delay[len(g.Delay)-1] = gm.finalDelay
 
-	out, err := os.Create("out.gif")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = gif.EncodeAll(out, g)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Printf("Output %d frames to: out.gif\n", len(g.Image))
+	return g, nil
 }
