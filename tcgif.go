@@ -14,6 +14,8 @@ import (
 )
 
 var (
+	// See: https://www.biphelps.com/blog/The-Fastest-GIF-Does-Not-Exist
+	frameDelay = flag.Int("delay", 2, "frame delay in ms. 2 is fastest for historical reasons")
 	frameLimit = flag.Uint("framelimit", 0, "max number of frames. 0 = unlimited")
 	backfill   = flag.Bool("backfill", true, "backfill still missing pixels with closest color")
 	popsort    = flag.Bool("sort", true, "sort colors by popularity")
@@ -120,7 +122,7 @@ func main() {
 
 	g.Delay = make([]int, len(g.Image))
 	for i := range g.Delay {
-		g.Delay[i] = 0
+		g.Delay[i] = *frameDelay
 	}
 
 	out, err := os.Create("out.gif")
