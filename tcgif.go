@@ -4,8 +4,6 @@ import (
 	"image"
 	"image/color"
 	"image/gif"
-	_ "image/jpeg"
-	_ "image/png"
 	"sort"
 )
 
