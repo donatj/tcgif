@@ -22,6 +22,7 @@ func (p colorCountList) Len() int           { return len(p) }
 func (p colorCountList) Less(i, j int) bool { return len(p[i].Coords) < len(p[j].Coords) }
 func (p colorCountList) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }
 
+// GIFMaker is a struct used to create a "Truecolor GIF" from an image
 type GIFMaker struct {
 	frameDelay int
 	finalDelay int
@@ -32,38 +33,52 @@ type GIFMaker struct {
 	popsort  bool
 }
 
+// Option is a function passed to NewGIFMaker to modify the behavior of GIFMaker
 type Option func(*GIFMaker)
 
+// WithFrameDelay sets the delay for each frame in the GIF in 100ths of a second
+// excluding the final frame which is determined by WithFinalDelay
 func WithFrameDelay(delay int) Option {
 	return func(g *GIFMaker) {
 		g.frameDelay = delay
 	}
 }
 
+// WithFinalDelay sets the delay for the final frame of the GIF
+// in 100ths of a second - default is 300
 func WithFinalDelay(delay int) Option {
 	return func(g *GIFMaker) {
 		g.finalDelay = delay
 	}
 }
 
+// WithFrameLimit sets the maximum number of frames to be included in the GIF
 func WithFrameLimit(limit uint) Option {
 	return func(g *GIFMaker) {
 		g.frameLimit = limit
 	}
 }
 
+// WithBackfill sets whether the GIF will be backfilled preemptively with the
+// closest color in the palette.
 func WithBackfill(backfill bool) Option {
 	return func(g *GIFMaker) {
 		g.backfill = backfill
 	}
 }
 
+// WithPopularitySort sets whether the total palette is sorted by popularity
+//
+// Disabling this option will result in the palette being sorted by the order
+// in which the colors were found to the image. This can improve performance
+// but may result in a less visually pleasing GIF
 func WithPopularitySort(popsort bool) Option {
 	return func(g *GIFMaker) {
 		g.popsort = popsort
 	}
 }
 
+// NewGIFMaker creates a new GIFMaker with the specified options
 func NewGIFMaker(opts ...Option) *GIFMaker {
 	gm := &GIFMaker{
 		frameDelay: 2,
@@ -80,6 +95,7 @@ func NewGIFMaker(opts ...Option) *GIFMaker {
 	return gm
 }
 
+// MakeGIF creates a "Truecolor GIF" from the given image using the given options
 func (gm *GIFMaker) MakeGIF(img image.Image) (*gif.GIF, error) {
 	b := img.Bounds()
 	colormap := make(map[color.Color][]coord)
