@@ -1,7 +1,6 @@
 # tcgif
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/donatj/tcgif.svg)](https://pkg.go.dev/github.com/donatj/tcgif)
-[![Go Report Card](https://goreportcard.com/badge/github.com/donatj/tcgif)](https://goreportcard.com/report/github.com/donatj/tcgif)
 
 
 Trueclor Gif Generator
